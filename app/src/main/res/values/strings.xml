@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">todo-list-mvvm</string>
+    <string name="app_name">Tasks</string>
     <string name="add_task">Add Task</string>
     <string name="task_name">Task name</string>
     <string name="important_task">Important task</string>

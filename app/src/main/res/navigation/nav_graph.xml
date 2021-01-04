@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    android:label="Tasks"
+    app:startDestination="@id/tasksFragment2">
+    <fragment
+        android:id="@+id/tasksFragment2"
+        android:name="org.viper75.todolistmvvm.ui.tasks.TasksFragment"
+        android:label="tasks_fragment"
+        tools:layout="@layout/tasks_fragment" />
+</navigation>
