@@ -13,6 +13,8 @@ import org.viper75.todolistmvvm.data.PreferencesManager
 import org.viper75.todolistmvvm.data.SortOrder
 import org.viper75.todolistmvvm.data.Task
 import org.viper75.todolistmvvm.data.TaskDao
+import org.viper75.todolistmvvm.ui.ADD_TASK_RESULT_OK
+import org.viper75.todolistmvvm.ui.EDIT_TASK_RESULT_OK
 
 class TasksViewModel @ViewModelInject constructor(
     private val taskDao: TaskDao,
@@ -68,6 +70,17 @@ class TasksViewModel @ViewModelInject constructor(
         tasksEventChannel.send(TasksEvent.NavigateToAddTaskScreen)
     }
 
+    fun onAddEditResult(result: Int) {
+        when (result) {
+            ADD_TASK_RESULT_OK -> showTaskSavedConfirmationMessage("Task Added")
+            EDIT_TASK_RESULT_OK -> showTaskSavedConfirmationMessage("Task Updated")
+        }
+    }
+
+    private fun showTaskSavedConfirmationMessage(msg: String) = viewModelScope.launch {
+        tasksEventChannel.send(TasksEvent.ShowTaskSavedConfirmationMessage(msg))
+    }
+
     sealed class TasksEvent {
         object NavigateToAddTaskScreen : TasksEvent()
 
@@ -77,6 +90,10 @@ class TasksViewModel @ViewModelInject constructor(
 
         data class ShowUndoDeleteTaskMessage(
             val task: Task
+        ) : TasksEvent()
+
+        data class ShowTaskSavedConfirmationMessage (
+            val msg: String
         ) : TasksEvent()
     }
 }
