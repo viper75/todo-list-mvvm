@@ -30,23 +30,19 @@ class TasksViewModel @ViewModelInject constructor(
     val tasksEventFlow = tasksEventChannel.receiveAsFlow()
 
     private val tasksFlow = combine(searchQuery.asFlow(), preferencesFlow) {
-        searchQuery, preferencesFlow -> Pair(searchQuery, preferencesFlow)
-    }.flatMapLatest { (searchQuery, preferencesFlow) ->
-        taskDao.getAllTasks(searchQuery, preferencesFlow.sortOrder, preferencesFlow.hideCompleted)
+        searchQuery, filterPreferences -> Pair(searchQuery, filterPreferences)
+    }.flatMapLatest { (searchQuery, filterPreferences) ->
+        taskDao.getAllTasks(searchQuery, filterPreferences.sortOrder, filterPreferences.hideCompleted)
     }
 
     val tasks =  tasksFlow.asLiveData()
 
-    fun onSortOrderSelected(sortOrder: SortOrder) {
-        viewModelScope.launch {
+    fun onSortOrderSelected(sortOrder: SortOrder) =viewModelScope.launch {
             preferencesManager.updateSortOrder(sortOrder)
-        }
     }
 
-    fun onHideCompletedChecked(hideCompleted: Boolean) {
-        viewModelScope.launch {
+    fun onHideCompletedChecked(hideCompleted: Boolean) = viewModelScope.launch {
             preferencesManager.updateHideCompleted(hideCompleted)
-        }
     }
 
     fun onItemClick(task: Task) = viewModelScope.launch {
@@ -81,8 +77,13 @@ class TasksViewModel @ViewModelInject constructor(
         tasksEventChannel.send(TasksEvent.ShowTaskSavedConfirmationMessage(msg))
     }
 
+    fun onDeleteAllCompletedTasks() = viewModelScope.launch {
+        tasksEventChannel.send(TasksEvent.NavigateToDeleteAllScreen)
+    }
+
     sealed class TasksEvent {
         object NavigateToAddTaskScreen : TasksEvent()
+        object NavigateToDeleteAllScreen : TasksEvent()
 
         data class NavigateToEditScreen(
             val task: Task

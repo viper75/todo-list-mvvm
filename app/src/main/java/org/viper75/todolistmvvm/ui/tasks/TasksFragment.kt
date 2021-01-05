@@ -31,6 +31,8 @@ class TasksFragment : Fragment(R.layout.tasks_fragment), TasksListAdapter.OnItem
 
     private val viewModel: TasksViewModel by viewModels()
 
+    private lateinit var searchView: SearchView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -95,6 +97,10 @@ class TasksFragment : Fragment(R.layout.tasks_fragment), TasksListAdapter.OnItem
                     is ShowTaskSavedConfirmationMessage -> {
                         Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
                     }
+                    is NavigateToDeleteAllScreen -> {
+                        val action = TasksFragmentDirections.actionGlobalDeleteAllCompletedDialogFragment()
+                        findNavController().navigate(action)
+                    }
                 }
             }
         }
@@ -114,7 +120,13 @@ class TasksFragment : Fragment(R.layout.tasks_fragment), TasksListAdapter.OnItem
         inflater.inflate(R.menu.tasks_fragment_menu, menu)
 
         val searchItem = menu.findItem(R.id.search_action)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
+
+        val pendingQuery = viewModel.searchQuery.value
+        if (pendingQuery != null && pendingQuery.isNotEmpty()) {
+            searchItem.expandActionView()
+            searchView.setQuery(pendingQuery, false)
+        }
 
         searchView.onQueryTextChanged {
             viewModel.searchQuery.value = it
@@ -144,10 +156,16 @@ class TasksFragment : Fragment(R.layout.tasks_fragment), TasksListAdapter.OnItem
             }
 
             R.id.delete_all_completed_tasks_action -> {
+                viewModel.onDeleteAllCompletedTasks()
                 true
             }
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        searchView.setOnQueryTextListener(null)
     }
 }
