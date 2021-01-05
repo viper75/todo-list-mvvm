@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import org.viper75.todolistmvvm.data.Task
 import org.viper75.todolistmvvm.databinding.TaskItemBinding
 
-class TasksListAdapter : ListAdapter<Task, TasksListAdapter.TaskItemViewHolder>(DiffCallback()) {
+class TasksListAdapter(
+    private val listener: OnItemClickListener
+) : ListAdapter<Task, TasksListAdapter.TaskItemViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskItemViewHolder {
         val binding = TaskItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -21,9 +23,32 @@ class TasksListAdapter : ListAdapter<Task, TasksListAdapter.TaskItemViewHolder>(
         holder.bind(currentItem)
     }
 
-    class TaskItemViewHolder(
+    interface OnItemClickListener {
+        fun onItemClick(task: Task)
+        fun onItemChecked(task: Task, isChecked: Boolean)
+    }
+
+    inner class TaskItemViewHolder(
         private val binding: TaskItemBinding
     ) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.apply {
+                root.setOnClickListener {
+                    val position = adapterPosition
+                    val clickedTask = getItem(position)
+                    listener.onItemClick(clickedTask)
+                }
+
+                completedCheckBox.apply {
+                    setOnClickListener {
+                        val position = adapterPosition
+                        val clickedTask = getItem(position)
+                        listener.onItemChecked(clickedTask, isChecked)
+                    }
+                }
+            }
+        }
 
         fun bind(task: Task) {
             binding.apply {

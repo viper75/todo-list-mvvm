@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import org.viper75.todolistmvvm.data.PreferencesManager
 import org.viper75.todolistmvvm.data.SortOrder
+import org.viper75.todolistmvvm.data.Task
 import org.viper75.todolistmvvm.data.TaskDao
 
 class TasksViewModel @ViewModelInject constructor(
@@ -39,6 +40,12 @@ class TasksViewModel @ViewModelInject constructor(
         viewModelScope.launch {
             preferencesManager.updateHideCompleted(hideCompleted)
         }
+    }
+
+    fun onItemClick(task: Task){}
+
+    fun onItemChecked(task: Task, isChecked: Boolean) = viewModelScope.launch {
+        taskDao.update(task.copy(completed = isChecked))
     }
 }
 

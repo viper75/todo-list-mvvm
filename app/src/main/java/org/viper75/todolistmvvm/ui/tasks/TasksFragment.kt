@@ -15,11 +15,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.viper75.todolistmvvm.R
 import org.viper75.todolistmvvm.data.SortOrder
+import org.viper75.todolistmvvm.data.Task
 import org.viper75.todolistmvvm.databinding.TasksFragmentBinding
 import org.viper75.todolistmvvm.utils.onQueryTextChanged
 
 @AndroidEntryPoint
-class TasksFragment : Fragment(R.layout.tasks_fragment) {
+class TasksFragment : Fragment(R.layout.tasks_fragment), TasksListAdapter.OnItemClickListener {
 
     private val viewModel: TasksViewModel by viewModels()
 
@@ -28,7 +29,7 @@ class TasksFragment : Fragment(R.layout.tasks_fragment) {
 
         val binding = TasksFragmentBinding.bind(view)
 
-        val listAdapter = TasksListAdapter()
+        val listAdapter = TasksListAdapter(this)
 
         binding.apply {
             tasksRecyclerView.apply {
@@ -43,6 +44,14 @@ class TasksFragment : Fragment(R.layout.tasks_fragment) {
         }
 
         setHasOptionsMenu(true)
+    }
+
+    override fun onItemClick(task: Task) {
+        viewModel.onItemClick(task)
+    }
+
+    override fun onItemChecked(task: Task, isChecked: Boolean) {
+        viewModel.onItemChecked(task, isChecked)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
