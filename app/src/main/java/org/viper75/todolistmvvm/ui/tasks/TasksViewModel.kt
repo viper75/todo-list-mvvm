@@ -1,12 +1,13 @@
 package org.viper75.todolistmvvm.ui.tasks
 
+import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.viper75.todolistmvvm.data.PreferencesManager
 import org.viper75.todolistmvvm.data.SortOrder
@@ -15,14 +16,18 @@ import org.viper75.todolistmvvm.data.TaskDao
 
 class TasksViewModel @ViewModelInject constructor(
     private val taskDao: TaskDao,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    @Assisted private val state: SavedStateHandle
 ): ViewModel() {
 
-    val searchQuery = MutableStateFlow("")
+    val searchQuery = state.getLiveData("searchQuery", "")
 
     val preferencesFlow = preferencesManager.preferencesFlow
 
-    private val tasksFlow = combine(searchQuery, preferencesFlow) {
+    private val tasksEventChannel = Channel<TasksEvent>()
+    val tasksEventFlow = tasksEventChannel.receiveAsFlow()
+
+    private val tasksFlow = combine(searchQuery.asFlow(), preferencesFlow) {
         searchQuery, preferencesFlow -> Pair(searchQuery, preferencesFlow)
     }.flatMapLatest { (searchQuery, preferencesFlow) ->
         taskDao.getAllTasks(searchQuery, preferencesFlow.sortOrder, preferencesFlow.hideCompleted)
@@ -42,10 +47,37 @@ class TasksViewModel @ViewModelInject constructor(
         }
     }
 
-    fun onItemClick(task: Task){}
+    fun onItemClick(task: Task) = viewModelScope.launch {
+        tasksEventChannel.send(TasksEvent.NavigateToEditScreen(task))
+    }
 
     fun onItemChecked(task: Task, isChecked: Boolean) = viewModelScope.launch {
         taskDao.update(task.copy(completed = isChecked))
+    }
+
+    fun onItemSwiped(task: Task) = viewModelScope.launch {
+        taskDao.delete(task)
+        tasksEventChannel.send(TasksEvent.ShowUndoDeleteTaskMessage(task))
+    }
+
+    fun onUndoDelete(task: Task) = viewModelScope.launch {
+        taskDao.insert(task)
+    }
+
+    fun onAddNewTaskClicked() = viewModelScope.launch {
+        tasksEventChannel.send(TasksEvent.NavigateToAddTaskScreen)
+    }
+
+    sealed class TasksEvent {
+        object NavigateToAddTaskScreen : TasksEvent()
+
+        data class NavigateToEditScreen(
+            val task: Task
+        ) : TasksEvent()
+
+        data class ShowUndoDeleteTaskMessage(
+            val task: Task
+        ) : TasksEvent()
     }
 }
 
