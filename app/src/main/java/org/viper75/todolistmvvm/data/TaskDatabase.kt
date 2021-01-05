@@ -5,13 +5,14 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.viper75.todolistmvvm.di.ApplicationScope
+import javax.inject.Inject
 import javax.inject.Provider
 
 abstract class TaskDatabase: RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
 
-    class Callback(
+    class Callback @Inject constructor(
         private val database: Provider<TaskDatabase>,
         @ApplicationScope private val applicationScope: CoroutineScope
     ): RoomDatabase.Callback() {
