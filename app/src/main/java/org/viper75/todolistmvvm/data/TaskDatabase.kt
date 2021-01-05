@@ -1,5 +1,6 @@
 package org.viper75.todolistmvvm.data
 
+import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -8,6 +9,7 @@ import org.viper75.todolistmvvm.di.ApplicationScope
 import javax.inject.Inject
 import javax.inject.Provider
 
+@Database(entities = [Task::class], version = 1, exportSchema = false)
 abstract class TaskDatabase: RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
