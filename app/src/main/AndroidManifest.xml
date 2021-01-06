@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.viper75.todolistmvvm">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:name=".ToDoApplication"
         android:allowBackup="true"

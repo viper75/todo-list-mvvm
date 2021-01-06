@@ -1,6 +1,5 @@
 package org.viper75.todolistmvvm.ui.addedittask
 
-import android.app.Activity
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
@@ -10,13 +9,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.viper75.todolistmvvm.data.Task
-import org.viper75.todolistmvvm.data.TaskDao
+import org.viper75.todolistmvvm.data.TaskRepository
 import org.viper75.todolistmvvm.ui.ADD_TASK_RESULT_OK
 import org.viper75.todolistmvvm.ui.EDIT_TASK_RESULT_OK
-import org.viper75.todolistmvvm.ui.MainActivity
 
 class AddEditTaskViewModel @ViewModelInject constructor(
-    private val taskDao: TaskDao,
+    private val taskRepository: TaskRepository,
     @Assisted private val state: SavedStateHandle
 ) : ViewModel() {
 
@@ -57,12 +55,12 @@ class AddEditTaskViewModel @ViewModelInject constructor(
     }
 
     private fun addTask(task: Task) = viewModelScope.launch {
-        taskDao.insert(task)
+        taskRepository.insertTask(task)
         addEditTaskChannel.send(AddEditTaskEvent.NavigateBackWithResult(ADD_TASK_RESULT_OK))
     }
 
     private fun updateTask(task: Task) = viewModelScope.launch {
-        taskDao.update(task)
+        taskRepository.updateTask(task)
         addEditTaskChannel.send(AddEditTaskEvent.NavigateBackWithResult(EDIT_TASK_RESULT_OK))
     }
 

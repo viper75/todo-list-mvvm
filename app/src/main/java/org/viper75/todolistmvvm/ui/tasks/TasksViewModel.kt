@@ -9,15 +9,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import org.viper75.todolistmvvm.data.PreferencesManager
-import org.viper75.todolistmvvm.data.SortOrder
-import org.viper75.todolistmvvm.data.Task
-import org.viper75.todolistmvvm.data.TaskDao
+import org.viper75.todolistmvvm.data.*
 import org.viper75.todolistmvvm.ui.ADD_TASK_RESULT_OK
 import org.viper75.todolistmvvm.ui.EDIT_TASK_RESULT_OK
 
 class TasksViewModel @ViewModelInject constructor(
-    private val taskDao: TaskDao,
+    private val taskRepository: TaskRepository,
     private val preferencesManager: PreferencesManager,
     @Assisted private val state: SavedStateHandle
 ): ViewModel() {
@@ -32,7 +29,7 @@ class TasksViewModel @ViewModelInject constructor(
     private val tasksFlow = combine(searchQuery.asFlow(), preferencesFlow) {
         searchQuery, filterPreferences -> Pair(searchQuery, filterPreferences)
     }.flatMapLatest { (searchQuery, filterPreferences) ->
-        taskDao.getAllTasks(searchQuery, filterPreferences.sortOrder, filterPreferences.hideCompleted)
+        taskRepository.getAllTasks(searchQuery, filterPreferences.sortOrder, filterPreferences.hideCompleted)
     }
 
     val tasks =  tasksFlow.asLiveData()
@@ -50,16 +47,16 @@ class TasksViewModel @ViewModelInject constructor(
     }
 
     fun onItemChecked(task: Task, isChecked: Boolean) = viewModelScope.launch {
-        taskDao.update(task.copy(completed = isChecked))
+        taskRepository.updateTask(task.copy(completed = isChecked))
     }
 
     fun onItemSwiped(task: Task) = viewModelScope.launch {
-        taskDao.delete(task)
+        taskRepository.deleteTask(task)
         tasksEventChannel.send(TasksEvent.ShowUndoDeleteTaskMessage(task))
     }
 
     fun onUndoDelete(task: Task) = viewModelScope.launch {
-        taskDao.insert(task)
+        taskRepository.insertTask(task)
     }
 
     fun onAddNewTaskClicked() = viewModelScope.launch {

@@ -8,7 +8,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import org.viper75.todolistmvvm.api.TodosApiService
 import org.viper75.todolistmvvm.data.TaskDatabase
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -31,6 +34,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideApplicationScope() = CoroutineScope(SupervisorJob())
+
+    @Provides
+    @Singleton
+    fun provideRetrofit() = Retrofit.Builder()
+        .baseUrl(TodosApiService.API_BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    @Provides
+    @Singleton
+    fun provideTodosApiService(retrofit: Retrofit) = retrofit
+        .create(TodosApiService::class.java)
 }
 
 @Retention(value = AnnotationRetention.RUNTIME)
